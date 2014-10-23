@@ -2,8 +2,11 @@ package com.myprogram.keisangame;
 
 import java.util.Random;
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View.OnClickListener;
 import android.view.View;
@@ -13,6 +16,7 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
+	private final String CONFIG_NAME = "appConfig"; // データ保存用ファイルネーム
 	private int num1, num2; // 問題式の数
 	private int result; // 解答を確保する変数
 	private int countAnswer; // 回答数
@@ -21,6 +25,7 @@ public class MainActivity extends Activity {
 	private TextView textViewQuestion; // クエスチョン用TextView
 	private TextView textViewAnswer; // 解答用TextView
 	private TextView textViewStatus; // 正答率用TextView
+	private TextView textViewTime; // 時間用TextView
 	private Button button1; // 「1」
 	private Button button2; // 「2」
 	private Button button3; // 「3」
@@ -36,7 +41,9 @@ public class MainActivity extends Activity {
 	private SoundPool soundPool; // 効果音
 	private int soundID1; // 正解音のID
 	private int soundID2; // 不正解音のID
-	
+	private NormalModeTask task;
+	private String gameMode; // ゲームモードを保存する文字列
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -46,6 +53,7 @@ public class MainActivity extends Activity {
 		textViewQuestion = (TextView) findViewById(R.id.textViewQuestion);
 		textViewAnswer = (TextView) findViewById(R.id.textViewAnswer);
 		textViewStatus = (TextView) findViewById(R.id.textViewStatus);
+		textViewTime = (TextView) findViewById(R.id.textViewTime);
 		button1 = (Button) findViewById(R.id.button1);
 		button2 = (Button) findViewById(R.id.button2);
 		button3 = (Button) findViewById(R.id.button3);
@@ -64,12 +72,12 @@ public class MainActivity extends Activity {
 		// 音ファイルのロード
 		soundID1 = soundPool.load(getApplicationContext(), R.raw.correct, 1);
 		soundID2 = soundPool.load(getApplicationContext(), R.raw.incorrect, 1);
-		//　回答数・正答数の初期化
+		// 回答数・正答数の初期化
 		countAnswer = 0;
 		countCorrect = 0;
 		// 正解率の表示
 		textViewStatus.setText(countCorrect + "/" + countAnswer);
-		
+
 		// 問題の数を乱数で作る
 		rand = new Random();
 		num1 = rand.nextInt(10);
@@ -78,6 +86,16 @@ public class MainActivity extends Activity {
 		result = num1 * num2;
 		// 問題文を表示
 		textViewQuestion.setText(num1 + " × " + num2 + " = ?");
+
+		gameMode = getIntent().getStringExtra("gameMode");
+		// ゲームモードがノーマルの場合
+		if (gameMode.equals("normal")) {
+			// 時間の表示
+			textViewTime.setText("00:10:0000");
+			// カウントダウン開始(別スレッド)
+			task = new NormalModeTask();
+			task.execute();
+		}
 
 		// クリックイベント処理の実装
 		button1.setOnClickListener(new OnClickListener() {
@@ -165,19 +183,33 @@ public class MainActivity extends Activity {
 		});
 	}
 
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		// サウンドの開放
+		soundPool.release();
+		if (task != null) {
+			// AsincTasc終了要請
+			task.cancel(true);
+		}
+	}
+
+	/*------------------------
+	 * 関数
+	------------------------*/
 	// 0~9の数値入力処理
-	public void inputNumber(View view) {
+	private void inputNumber(View view) {
 		String str = ((Button) view).getText().toString();
 		textViewAnswer.append(str);
 	}
 
 	// 数値クリアー処理
-	public void inputClear(View view) {
+	private void inputClear(View view) {
 		textViewAnswer.setText("");
 	}
 
 	// 解答処理
-	public void inputEnter(View view) {
+	private void inputEnter(View view) {
 		int answer = Integer.parseInt(textViewAnswer.getText().toString());
 		// 正誤判定
 		if (result == answer) {
@@ -193,13 +225,13 @@ public class MainActivity extends Activity {
 			// 不正解音
 			soundPool.play(soundID2, 1.0f, 1.0f, 0, 0, 1.0f);
 		}
-		
+
 		// 回答数更新
 		countAnswer++;
-		
+
 		// 正解率の表示更新
 		textViewStatus.setText(countCorrect + "/" + countAnswer);
-		
+
 		// 解答のクリア
 		textViewAnswer.setText("");
 		// 次の問題の作成
@@ -208,5 +240,84 @@ public class MainActivity extends Activity {
 		result = num1 * num2;
 		// 問題文を表示
 		textViewQuestion.setText(num1 + " × " + num2 + " = ?");
+	}
+
+	// 時間更新処理
+	private void timeUpdate(String time) {
+		textViewTime.setText(time);
+	}
+
+	// プリファレンスのロード
+	private void loadConfig() {
+		// プリファレンスの作成
+		// MODE_PRIVATEはそのアプリのみアクセス可能なファイルを作成
+		SharedPreferences pref = getSharedPreferences("CONFIG_NAME", Context.MODE_PRIVATE);
+	}
+
+	// プリファレンスへのセーブ
+	private void saveConfig() {
+	}
+
+	/*------------------------
+	 * インナークラス
+	------------------------*/
+	// 型パラメータ<バックグラウンドのタスクに渡すパラメータ, 進捗単位のパラメータ, 処理結果のパラメータ>
+	private class NormalModeTask extends AsyncTask<Void, String, Void> {
+
+		private final int TIME_LIMIT; // 制限時間
+		private long start;
+		private long end;
+
+		public NormalModeTask() {
+			super();
+			this.TIME_LIMIT = 10000;
+			this.start = 0;
+			this.end = 0;
+		}
+
+		// バックグラウンド処理
+		@Override
+		protected Void doInBackground(Void... params) {
+			// 開始時間の取得
+			start = System.currentTimeMillis();
+			end = System.currentTimeMillis();
+			while (end - start < TIME_LIMIT) {
+				// 終了要請が来てないか確認
+				if (isCancelled()) {
+					break;
+				}
+				// 待機
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				end = System.currentTimeMillis();
+				int time = TIME_LIMIT - (int) (end - start);
+				// 秒
+				String second = String.valueOf(time / 1000);
+				// ミリ秒
+				String miriSecond = String.valueOf(time % 1000);
+				// 表示時間
+				String remainText = "00:" + second + ":" + miriSecond;
+				publishProgress(remainText);
+			}
+			return null;
+		}
+
+		// アップデート処理
+		@Override
+		protected void onProgressUpdate(String... values) {
+			timeUpdate(values[0]);
+		}
+
+		// 終了処理
+		@Override
+		protected void onPostExecute(Void result) {
+			// 結果を報告
+			setResult(RESULT_OK);
+			// アクティビティの終了
+			finish();
+		}
 	}
 }

@@ -2,6 +2,13 @@
 <resources>
 
     <string name="app_name">KeisanGame</string>
+    
+    <!-- TitleActivity -->
+    <string name="title">KEISAN GAME</string>
+    <string name="startNormal">通常モード</string>
+    <string name="startEndless">エンドレスモード</string>
+    
+    <!-- MainActivity -->
     <string name="question_sample">Sample</string>
     <string name="answer_sample">10</string>
     <string name="n1">1</string>
@@ -17,4 +24,7 @@
     <string name="clear">clear</string>
     <string name="enter">enter</string>
 
+    <!-- ResultActivity -->
+    <string name="result">結果</string>
+    <string name="again">もう一度</string>
 </resources>
