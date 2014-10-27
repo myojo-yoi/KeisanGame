@@ -5,6 +5,7 @@
     tools:context="${relativePackage}.${activityClass}" >
 
     <TextView
+        android:id="@+id/textViewResult"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -12,6 +13,25 @@
         android:layout_marginTop="50dp"
         android:text="@string/result"
         android:textSize="60sp" />
+
+    <TextView
+        android:id="@+id/textViewScore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:gravity="center"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/textViewUpdateScore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textViewScore"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:textColor="#ff0000"
+        android:textSize="20sp" />
 
     <Button
         android:id="@+id/buttonRetry"

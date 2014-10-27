@@ -12,6 +12,7 @@ public final class R {
     }
     public static final class drawable {
         public static final int ic_launcher=0x7f020000;
+        public static final int title_bg=0x7f020001;
     }
     public static final class id {
         public static final int button1=0x7f070004;
@@ -26,13 +27,16 @@ public final class R {
         public static final int button7=0x7f07000a;
         public static final int button8=0x7f07000b;
         public static final int button9=0x7f07000c;
-        public static final int buttonRetry=0x7f070010;
-        public static final int buttonStartEndless=0x7f070012;
-        public static final int buttonStartNormal=0x7f070011;
+        public static final int buttonRetry=0x7f070013;
+        public static final int buttonStartEndless=0x7f070015;
+        public static final int buttonStartNormal=0x7f070014;
         public static final int textViewAnswer=0x7f070001;
         public static final int textViewQuestion=0x7f070000;
+        public static final int textViewResult=0x7f070010;
+        public static final int textViewScore=0x7f070011;
         public static final int textViewStatus=0x7f070002;
         public static final int textViewTime=0x7f070003;
+        public static final int textViewUpdateScore=0x7f070012;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
@@ -42,6 +46,7 @@ public final class R {
     public static final class raw {
         public static final int correct=0x7f040000;
         public static final int incorrect=0x7f040001;
+        public static final int op=0x7f040002;
     }
     public static final class string {
         public static final int again=0x7f050013;

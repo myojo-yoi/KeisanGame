@@ -3,7 +3,9 @@ package com.myprogram.keisangame;
 import java.util.Random;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.AsyncTask;
@@ -43,12 +45,16 @@ public class MainActivity extends Activity {
 	private int soundID2; // 不正解音のID
 	private NormalModeTask task;
 	private String gameMode; // ゲームモードを保存する文字列
+	private int preScore; // 前回のハイスコア
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
+		
+		// 前回のハイスコアをロード
+		preScore = loadHiScore();
+		
 		// idから要素を取得
 		textViewQuestion = (TextView) findViewById(R.id.textViewQuestion);
 		textViewAnswer = (TextView) findViewById(R.id.textViewAnswer);
@@ -192,6 +198,10 @@ public class MainActivity extends Activity {
 			// AsincTasc終了要請
 			task.cancel(true);
 		}
+		// ハイスコア更新
+		if ( preScore < countCorrect) {
+			saveHiScore(countCorrect);
+		}
 	}
 
 	/*------------------------
@@ -248,14 +258,24 @@ public class MainActivity extends Activity {
 	}
 
 	// プリファレンスのロード
-	private void loadConfig() {
+	private int loadHiScore() {
 		// プリファレンスの作成
 		// MODE_PRIVATEはそのアプリのみアクセス可能なファイルを作成
-		SharedPreferences pref = getSharedPreferences("CONFIG_NAME", Context.MODE_PRIVATE);
+		SharedPreferences pref = getSharedPreferences(CONFIG_NAME,
+				Context.MODE_PRIVATE);
+		// ハイスコアロード(デフォルト値0)
+		return pref.getInt("hiScore", 0);
 	}
 
 	// プリファレンスへのセーブ
-	private void saveConfig() {
+	private void saveHiScore(int value) {
+		SharedPreferences pref = getSharedPreferences(CONFIG_NAME,
+				Context.MODE_PRIVATE);
+		Editor editor = pref.edit();
+		// スコアを設定(整数)
+		editor.putInt("hiScore", value);
+		// 設定を反映
+		editor.commit();
 	}
 
 	/*------------------------
@@ -315,7 +335,11 @@ public class MainActivity extends Activity {
 		@Override
 		protected void onPostExecute(Void result) {
 			// 結果を報告
-			setResult(RESULT_OK);
+			Intent intent = new Intent();
+			intent.putExtra("answer", countAnswer);
+			intent.putExtra("correct", countCorrect);
+			intent.putExtra("preScore", preScore);
+			setResult(RESULT_OK, intent);
 			// アクティビティの終了
 			finish();
 		}
