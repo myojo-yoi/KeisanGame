@@ -1,6 +1,5 @@
 package com.myprogram.keisangame;
 
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -37,7 +36,8 @@ public class ResultActivity extends Activity {
 		} else {
 			percentage = (double) correct / answer * 100;
 		}
-		String result = correct + "/" + answer + "\n" + percentage + "%";
+		String result = correct + "/" + answer + "\n"
+				+ String.format("%3.3f", percentage) + "%";
 		textViewScore.setText(result);
 		if (preScore < correct) {
 			String hiScore = "ハイスコア更新" + preScore + "-->" + correct;

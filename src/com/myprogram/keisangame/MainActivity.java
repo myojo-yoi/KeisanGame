@@ -20,6 +20,8 @@ public class MainActivity extends Activity {
 
 	private final String CONFIG_NAME = "appConfig"; // データ保存用ファイルネーム
 	private int num1, num2; // 問題式の数
+	private int arithmeticType; // 四則演算タイプ
+	private String fourArithmetic; // 四則演算タイプ(文字列)
 	private int result; // 解答を確保する変数
 	private int countAnswer; // 回答数
 	private int countCorrect; // 正答数
@@ -88,10 +90,44 @@ public class MainActivity extends Activity {
 		rand = new Random();
 		num1 = rand.nextInt(10);
 		num2 = rand.nextInt(10);
+		arithmeticType = rand.nextInt(4);
 		// 解答を確保
-		result = num1 * num2;
+		switch (arithmeticType) {
+		case 0: // 和
+			result = num1 + num2;
+			fourArithmetic = "+";
+			break;
+		case 1: // 差
+			if (num1 < num2) {
+				int change;
+				change = num1;
+				num1 = num2;
+				num2 = change;
+			}
+			result = num1 - num2;
+			fourArithmetic = "-";
+			break;
+		case 2: // 積
+			result = num1 * num2;
+			fourArithmetic = "×";
+			break;
+		case 3: // 商
+			while (true) {
+				num1 = rand.nextInt(10);
+				num2 = rand.nextInt(10);
+				if (num2 == 0) {
+					continue;
+				}
+				if (num1 % num2 == 0) {
+					break;
+				}
+			}
+			result = num1 / num2;
+			fourArithmetic = "/";
+			break;
+		}
 		// 問題文を表示
-		textViewQuestion.setText(num1 + " × " + num2 + " = ?");
+		textViewQuestion.setText(num1 + fourArithmetic + num2 + " = ?");
 
 		gameMode = getIntent().getStringExtra("gameMode");
 		// ゲームモードがノーマルの場合
@@ -247,9 +283,44 @@ public class MainActivity extends Activity {
 		// 次の問題の作成
 		num1 = rand.nextInt(10);
 		num2 = rand.nextInt(10);
-		result = num1 * num2;
+		arithmeticType = rand.nextInt(4);
+		// 解答を確保
+		switch (arithmeticType) {
+		case 0: // 和
+			result = num1 + num2;
+			fourArithmetic = "+";
+			break;
+		case 1: // 差
+			if (num1 < num2) {
+				int change;
+				change = num1;
+				num1 = num2;
+				num2 = change;
+			}
+			result = num1 - num2;
+			fourArithmetic = "-";
+			break;
+		case 2: // 積
+			result = num1 * num2;
+			fourArithmetic = "×";
+			break;
+		case 3: // 商
+			while (true) {
+				num1 = rand.nextInt(10);
+				num2 = rand.nextInt(10);
+				if (num2 == 0) {
+					continue;
+				}
+				if (num1 % num2 == 0) {
+					break;
+				}
+			}
+			result = num1 / num2;
+			fourArithmetic = "/";
+			break;
+		}
 		// 問題文を表示
-		textViewQuestion.setText(num1 + " × " + num2 + " = ?");
+		textViewQuestion.setText(num1 + fourArithmetic + num2 + " = ?");
 	}
 
 	// 時間更新処理
